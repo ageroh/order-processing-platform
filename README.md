@@ -132,14 +132,13 @@ GET /orders/{orderId}/lifecycle
 
 ## Next Steps
 
-Slice 1 has created the foundation. Slice 2 has added the architecture diagrams. The remaining implementation should proceed in this order:
+Slices 1-3 have created the foundation, added the architecture diagrams, and implemented the Orders domain model. The remaining implementation should proceed in this order:
 
-1. Orders domain model: aggregate, lines, lifecycle, cancellation policy, domain events.
-2. Orders persistence: EF Core mappings, order tables, lifecycle table, outbox, PostgreSQL integration tests.
-3. Application use cases: create, retrieve, cancel, lifecycle query, inventory/pricing/payment/shipping ports.
-4. API completion: replace placeholder controller responses with real use cases and validation.
-5. Messaging and Worker: outbox dispatcher, MassTransit publishing, retry/idempotency placeholders.
-6. Customer journey tests: successful order, inventory rejection, payment failure, retrieve, cancel, dispatch event.
-7. Handover artifacts: ADRs, module rules, deployment contract, future extraction guidance.
+1. Orders persistence: EF Core mappings, order tables, lifecycle table, outbox, PostgreSQL integration tests.
+2. Application use cases: create, retrieve, cancel, lifecycle query, inventory/pricing/payment/shipping ports.
+3. API completion: replace placeholder controller responses with real use cases and validation.
+4. Messaging and Worker: outbox dispatcher, MassTransit publishing, retry/idempotency placeholders.
+5. Customer journey tests: successful order, inventory rejection, payment failure, retrieve, cancel, dispatch event.
+6. Handover artifacts: ADRs, module rules, deployment contract, future extraction guidance.
 
 See [docs/design-memory.md](docs/design-memory.md) for detailed working notes and architectural reasoning.

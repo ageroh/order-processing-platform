@@ -2,6 +2,7 @@ using System.Net;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.Extensions.Logging;
+using Shouldly;
 
 namespace OrderProcessing.IntegrationTests;
 
@@ -20,6 +21,6 @@ public sealed class OrdersModuleControllerTests
 
         using var response = await client.GetAsync($"/orders/{Guid.NewGuid()}");
 
-        Assert.Equal(HttpStatusCode.NotImplemented, response.StatusCode);
+        response.StatusCode.ShouldBe(HttpStatusCode.NotImplemented);
     }
 }

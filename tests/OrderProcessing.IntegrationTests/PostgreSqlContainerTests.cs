@@ -1,3 +1,4 @@
+using Shouldly;
 using Testcontainers.PostgreSql;
 
 namespace OrderProcessing.IntegrationTests;
@@ -20,6 +21,6 @@ public sealed class PostgreSqlContainerTests
 
         await postgreSql.StartAsync();
 
-        Assert.False(string.IsNullOrWhiteSpace(postgreSql.GetConnectionString()));
+        postgreSql.GetConnectionString().ShouldNotBeNullOrWhiteSpace();
     }
 }

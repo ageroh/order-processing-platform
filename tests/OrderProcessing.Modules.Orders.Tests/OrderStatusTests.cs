@@ -1,4 +1,5 @@
 using OrderProcessing.Modules.Orders.Domain;
+using Shouldly;
 
 namespace OrderProcessing.Modules.Orders.Tests;
 
@@ -9,6 +10,6 @@ public sealed class OrderStatusTests
     {
         var statuses = Enum.GetNames<OrderStatus>();
 
-        Assert.Equal(["Pending", "Accepted", "Cancelled", "Rejected"], statuses);
+        statuses.ShouldBe(["Pending", "Accepted", "Cancelled", "Rejected"]);
     }
 }

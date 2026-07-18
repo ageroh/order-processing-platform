@@ -53,7 +53,7 @@ No generic `BuildingBlocks` projects are kept at this stage. Shared domain/appli
 - Initial messaging transport: in-memory for fast feedback.
 - Production messaging transport: deferred.
 - Observability: OpenTelemetry from the beginning.
-- Testing: xUnit with built-in assertions; no FluentAssertions.
+- Testing: xUnit with Shouldly; Moq where mocks are needed; no FluentAssertions.
 - Integration testing: Testcontainers for realistic infrastructure scenarios.
 - Event approach: event-driven integration patterns, not event sourcing.
 - CQRS: command/query separation at application level, not separate read/write stores by default.
@@ -322,7 +322,7 @@ Initial test types:
 - Testcontainers-based PostgreSQL tests when enabled
 - future customer journey tests
 
-No FluentAssertions is used due to licensing concerns. Use test-framework built-in assertions.
+No FluentAssertions is used due to licensing concerns. Use Shouldly for readable assertions, xUnit as the test runner, and Moq only where interaction-based mocks are genuinely useful.
 
 Initial customer journey scenarios:
 
@@ -427,11 +427,13 @@ Requirements covered:
 
 ### Slice 3: Orders Domain
 
+Status: implemented.
+
 Purpose:
 
 - implement the core order business model and rules before persistence/application plumbing grows around it
 
-Scope:
+Implemented artifacts:
 
 - `Order` aggregate
 - `OrderLine`
@@ -439,7 +441,9 @@ Scope:
 - creation invariants
 - full-order cancellation policy
 - domain events
-- module tests for accepted, rejected, and cancelled flows
+- `Money` value object
+- `OrderPricing` value object
+- module tests for pending, accepted, rejected, cancelled, and validation flows
 
 Requirements covered:
 

@@ -1,4 +1,5 @@
 using OrderProcessing.Modules.Orders;
+using Shouldly;
 
 namespace OrderProcessing.Architecture.Tests;
 
@@ -13,7 +14,7 @@ public sealed class ModuleDependencyTests
             .Select(type => type.FullName!)
             .ToArray();
 
-        var publicType = Assert.Single(publicTypes);
-        Assert.Equal(typeof(OrdersModuleServiceRegistrar).FullName, publicType);
+        publicTypes.ShouldHaveSingleItem()
+            .ShouldBe(typeof(OrdersModuleServiceRegistrar).FullName);
     }
 }

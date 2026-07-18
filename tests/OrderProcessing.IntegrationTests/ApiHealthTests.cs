@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.Extensions.Logging;
+using Shouldly;
 
 namespace OrderProcessing.IntegrationTests;
 
@@ -19,6 +20,6 @@ public sealed class ApiHealthTests
 
         using var response = await client.GetAsync("/health");
 
-        Assert.True(response.IsSuccessStatusCode);
+        response.IsSuccessStatusCode.ShouldBeTrue();
     }
 }
