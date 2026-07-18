@@ -120,6 +120,15 @@ tests/
 
 docs/
   design-memory.md
+  implementation-backlog.md
+  decisions/
+    0001-modular-monolith.md
+    0002-cloud-neutral-containers.md
+    0003-postgresql-ef-core.md
+    0004-masstransit-transport-abstraction.md
+    0005-testing-guardrails.md
+    0006-observability-from-start.md
+    0007-no-buildingblocks-project.md
   diagrams/
     architecture-diagrams.md
 
@@ -490,11 +499,39 @@ Requirements covered:
 - reliability
 - scalability foundation
 
-### Slice 5: Application Use Cases
+### Slice 5: Handover Decisions And Backlog
+
+Status: implemented.
 
 Purpose:
 
-- implement command/query flows and external capability ports
+- make the skeleton explainable, defensible, and safe for a delivery team to continue without turning the exercise into a full implementation
+
+Implemented artifacts:
+
+- ADR for modular monolith
+- ADR for cloud-neutral container deployability
+- ADR for PostgreSQL with EF Core
+- ADR for MassTransit transport abstraction
+- ADR for testing guardrails
+- ADR for OpenTelemetry
+- ADR for avoiding a premature `BuildingBlocks` project
+- implementation backlog for delivery team continuation
+
+Requirements covered:
+
+- maintainability
+- extensibility
+- deployment
+- reliability
+- testability
+- architectural communication
+
+### Deferred Delivery Backlog: Application Boundary Skeleton
+
+Purpose:
+
+- define command/query and external capability boundaries without fully implementing the product
 
 Scope:
 
@@ -506,6 +543,7 @@ Scope:
 - pricing/tax port
 - payment authorization port
 - shipping trigger port
+- result types
 - deterministic fake adapters for tests
 
 Requirements covered:
@@ -517,60 +555,34 @@ Requirements covered:
 - calculating pricing, taxes, and additional charges
 - integrating with external inventory, payment, and shipping systems through ports
 
-### Slice 6: API Completion
+### Deferred Delivery Backlog: Thin MVP Vertical Path
 
 Purpose:
 
-- replace placeholder controller responses with real application use cases
+- prove the architecture with one narrow create-order workflow after the skeleton is accepted
 
 Scope:
 
-- `POST /orders`
-- `GET /orders/{orderId}`
-- `POST /orders/{orderId}/cancel`
-- `GET /orders/{orderId}/lifecycle`
-- request validation
-- problem details
-- idempotency header handling
-- correlation headers
-- Swagger operation documentation
+- replace placeholder controller response for `POST /orders`
+- validate request
+- call fake inventory, pricing, and payment ports
+- persist accepted or rejected order
+- write outbox message
+- return documented HTTP result
 
 Requirements covered:
 
-- functional HTTP API
-- security foundation
-- observability foundation
-- reliability through idempotent command handling
-
-### Slice 7: Messaging and Worker
-
-Purpose:
-
-- make async integration reliable without choosing a production broker prematurely
-
-Scope:
-
-- integration event contracts
-- outbox dispatcher
-- MassTransit publisher
-- in-memory transport for initial tests
-- inbox placeholder
-- retry/dead-letter strategy placeholders
-- worker tests
-
-Requirements covered:
-
-- external system integration
+- creating an order
+- validating inventory availability
+- calculating pricing, taxes, and additional charges
 - reliability
-- scalability
 - observability
-- extensibility
 
-### Slice 8: Customer Journey Tests
+### Deferred Delivery Backlog: Customer Journey Tests
 
 Purpose:
 
-- protect the MVP behavior with executable business scenarios
+- protect implemented MVP behavior with executable scenarios
 
 Scope:
 
@@ -590,29 +602,29 @@ Requirements covered:
 - reliability
 - maintainability
 
-### Slice 9: Handover Artifacts
+### Deferred Delivery Backlog: Messaging And Worker Completion
 
 Purpose:
 
-- make the skeleton easy for a delivery team to continue
+- make asynchronous integration reliable after event contracts and runtime transport are confirmed
 
 Scope:
 
-- ADR for modular monolith
-- ADR for MassTransit transport abstraction
-- ADR for Testcontainers-first integration tests
-- ADR for OpenTelemetry
-- ADR for GitHub Actions CI
-- module dependency rules
-- future extraction guidance
-- deployment contract
+- integration event contracts
+- outbox dispatcher
+- MassTransit publisher
+- production transport selection
+- inbox placeholder
+- retry/dead-letter strategy
+- worker tests
 
 Requirements covered:
 
-- maintainability
+- external system integration
+- reliability
+- scalability
+- observability
 - extensibility
-- deployment
-- architectural communication
 
 ## Remaining Decisions
 

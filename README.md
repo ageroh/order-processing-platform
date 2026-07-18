@@ -114,6 +114,12 @@ The architecture diagrams are in [docs/diagrams/architecture-diagrams.md](docs/d
 
 They include a simple system design overview and the order lifecycle.
 
+## Architecture Decisions
+
+Architecture decisions are recorded in [docs/decisions](docs/decisions).
+
+The implementation handover backlog is in [docs/implementation-backlog.md](docs/implementation-backlog.md).
+
 ## Initial API Surface
 
 ```http
@@ -132,12 +138,14 @@ GET /orders/{orderId}/lifecycle
 
 ## Next Steps
 
-Slices 1-4 have created the foundation, added the architecture diagrams, implemented the Orders domain model, and mapped Orders persistence. The remaining implementation should proceed in this order:
+Slices 1-5 have produced the implementation-ready skeleton and handover artifacts. The remaining work should be treated as delivery backlog, not as part of this skeleton exercise.
 
-1. Application use cases: create, retrieve, cancel, lifecycle query, inventory/pricing/payment/shipping ports.
-2. API completion: replace placeholder controller responses with real use cases and validation.
-3. Messaging and Worker: outbox dispatcher, MassTransit publishing, retry/idempotency placeholders.
-4. Customer journey tests: successful order, inventory rejection, payment failure, retrieve, cancel, dispatch event.
-5. Handover artifacts: ADRs, module rules, deployment contract, future extraction guidance.
+Recommended delivery path:
+
+1. Add command/query boundary contracts and external capability ports.
+2. Implement one thin create-order vertical path with deterministic fake adapters.
+3. Add customer journey tests around the MVP path.
+4. Add outbox dispatch and production transport when the customer runtime is known.
+5. Finalize security, observability backend, and deployment topology.
 
 See [docs/design-memory.md](docs/design-memory.md) for detailed working notes and architectural reasoning.
