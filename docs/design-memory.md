@@ -191,13 +191,10 @@ The diagram artifact is [docs/diagrams/architecture-diagrams.md](diagrams/archit
 
 It includes:
 
-- system context
-- modular monolith/container view
-- create-order sequence
+- system design overview
 - order lifecycle state diagram
-- cloud-neutral deployment shape
 
-The diagrams follow a system-design style: explain external dependencies first, then runtime components, then critical flows, then deployment and scaling assumptions.
+The diagrams follow a system-design style: explain external dependencies, runtime components, async boundaries, deployment portability, and lifecycle rules without splitting the story across too many visuals.
 
 ## Synchronous Path
 
@@ -416,11 +413,8 @@ Purpose:
 
 Implemented artifacts:
 
-- system context diagram
-- modular monolith/container diagram
-- create-order sequence diagram
+- system design overview diagram
 - order lifecycle state diagram
-- cloud-neutral deployment shape diagram
 
 Requirements covered:
 

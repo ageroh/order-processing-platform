@@ -112,7 +112,7 @@ infra/
 
 The architecture diagrams are in [docs/diagrams/architecture-diagrams.md](docs/diagrams/architecture-diagrams.md).
 
-They cover the system context, modular monolith/container view, create-order flow, order lifecycle, and cloud-neutral deployment shape.
+They include a simple system design overview and the order lifecycle.
 
 ## Initial API Surface
 
