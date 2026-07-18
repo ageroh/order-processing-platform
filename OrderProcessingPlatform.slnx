@@ -1,0 +1,31 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/OrderProcessing.Api/OrderProcessing.Api.csproj" />
+    <Project Path="src/OrderProcessing.Worker/OrderProcessing.Worker.csproj" />
+  </Folder>
+  <Folder Name="/src/Modules/" />
+  <Folder Name="/src/Modules/Catalog/">
+    <Project Path="src/Modules/Catalog/OrderProcessing.Modules.Catalog.Contracts/OrderProcessing.Modules.Catalog.Contracts.csproj" />
+  </Folder>
+  <Folder Name="/src/Modules/Inventory/">
+    <Project Path="src/Modules/Inventory/OrderProcessing.Modules.Inventory.Contracts/OrderProcessing.Modules.Inventory.Contracts.csproj" />
+  </Folder>
+  <Folder Name="/src/Modules/Orders/">
+    <Project Path="src/Modules/Orders/OrderProcessing.Modules.Orders.Contracts/OrderProcessing.Modules.Orders.Contracts.csproj" />
+    <Project Path="src/Modules/Orders/OrderProcessing.Modules.Orders/OrderProcessing.Modules.Orders.csproj" />
+  </Folder>
+  <Folder Name="/src/Modules/Payments/">
+    <Project Path="src/Modules/Payments/OrderProcessing.Modules.Payments.Contracts/OrderProcessing.Modules.Payments.Contracts.csproj" />
+  </Folder>
+  <Folder Name="/src/Modules/Pricing/">
+    <Project Path="src/Modules/Pricing/OrderProcessing.Modules.Pricing.Contracts/OrderProcessing.Modules.Pricing.Contracts.csproj" />
+  </Folder>
+  <Folder Name="/src/Modules/Shipping/">
+    <Project Path="src/Modules/Shipping/OrderProcessing.Modules.Shipping.Contracts/OrderProcessing.Modules.Shipping.Contracts.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/OrderProcessing.Architecture.Tests/OrderProcessing.Architecture.Tests.csproj" />
+    <Project Path="tests/OrderProcessing.IntegrationTests/OrderProcessing.IntegrationTests.csproj" />
+    <Project Path="tests/OrderProcessing.Modules.Orders.Tests/OrderProcessing.Modules.Orders.Tests.csproj" />
+  </Folder>
+</Solution>

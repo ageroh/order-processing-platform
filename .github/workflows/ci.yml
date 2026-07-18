@@ -1,0 +1,42 @@
+name: ci
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+
+jobs:
+  build-test:
+    runs-on: ubuntu-latest
+
+    env:
+      DOTNET_NOLOGO: true
+      RUN_TESTCONTAINERS: true
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 10.0.x
+
+      - name: Restore
+        run: dotnet restore OrderProcessingPlatform.slnx
+
+      - name: Build
+        run: dotnet build OrderProcessingPlatform.slnx --configuration Release --no-restore
+
+      - name: Format check
+        run: dotnet format OrderProcessingPlatform.slnx --verify-no-changes --no-restore
+
+      - name: Test
+        run: dotnet test OrderProcessingPlatform.slnx --configuration Release --no-build
+
+      - name: Build API image
+        run: docker build -f src/OrderProcessing.Api/Dockerfile -t order-processing-api:ci .
+
+      - name: Build Worker image
+        run: docker build -f src/OrderProcessing.Worker/Dockerfile -t order-processing-worker:ci .

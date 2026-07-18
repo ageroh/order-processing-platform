@@ -24,15 +24,17 @@ This gives us strong module boundaries without introducing distributed-system co
 
 - The platform targets .NET 10 and EF Core 10.
 - The first implementation should be a modular monolith, not microservices.
-- The platform should be packaged as containers but should not depend on a specific cloud provider.
+- The production runtime platform is unknown.
+- The first deployment contract is portable Docker images for the API and Worker.
+- Those containers should be able to run later on Azure Container Apps, AWS ECS/Fargate, Kubernetes, Docker on virtual machines, private cloud, or another customer-approved platform.
 - The initial runtime shape should include:
   - `OrderProcessing.Api` for synchronous HTTP APIs.
   - `OrderProcessing.Worker` for asynchronous processing, outbox dispatch, retries, and integration workflows.
 - The application should run locally with Docker Compose.
-- The production runtime could be Kubernetes, managed containers, virtual machines, private cloud, public cloud, or another customer-approved platform.
+- The customer context is assumed to be greenfield.
 - Source control and CI should be hosted in GitHub.
 - GitHub Actions should validate every pull request before merge.
-- The database should be relational, with schema boundaries per module.
+- PostgreSQL is the default relational database, with schema boundaries per module.
 - EF Core should be used behind module-owned persistence boundaries.
 - External inventory, payment, tax, and shipping systems should be integrated through ports and adapters.
 - Messaging should be implemented through MassTransit so transport details stay outside business modules.
@@ -40,8 +42,11 @@ This gives us strong module boundaries without introducing distributed-system co
 - Business modules should not reference broker SDKs directly.
 - Order state is authoritative in the Orders module.
 - Order creation is a workflow, not simple CRUD.
+- Orders should be accepted only after inventory availability, pricing, and payment authorization succeed.
+- The initial order lifecycle uses four states: `Pending`, `Accepted`, `Cancelled`, and `Rejected`.
+- Cancellation is full-order cancellation only.
 - Cancellation rules belong in the domain model.
-- Inventory validation, pricing, payment, and shipping are separate capabilities with clear contracts.
+- Inventory availability validation, pricing, payment, and shipping are separate capabilities with clear contracts.
 - Reliability should be designed around idempotency, retries, outbox/inbox patterns, and observable workflows.
 - Automated tests are a first-class architecture boundary because most implementation work is expected to be produced quickly by AI-assisted agents.
 - Testcontainers should be used early for realistic database, messaging, and API integration scenarios.
@@ -75,9 +80,10 @@ Shipping
 src/
   OrderProcessing.Api/
   OrderProcessing.Worker/
-  BuildingBlocks/
   Modules/
     Orders/
+      OrderProcessing.Modules.Orders/
+      OrderProcessing.Modules.Orders.Contracts/
     Catalog/
     Inventory/
     Pricing/
@@ -111,31 +117,23 @@ POST /orders/{orderId}/cancel
 GET /orders/{orderId}/lifecycle
 ```
 
-## Key Open Decisions
+## Remaining Decisions
 
-- Which database is preferred: PostgreSQL, SQL Server, or customer standard?
-- Which MassTransit transport is preferred: in-memory for local tests, RabbitMQ, Azure Service Bus, AWS SQS, an enterprise transport, or no external broker initially?
-- Is the customer greenfield or brownfield?
-- Is inventory checked, reserved, decremented, or handled externally?
-- Is payment authorized during order creation or handled asynchronously?
-- Which order states are required by the business?
-- Is cancellation full only, or partial as well?
-- Which runtime platform is expected in production?
+- Final MassTransit production transport.
+- Production runtime platform for the Docker images.
+- Identity provider.
+- Final observability backend.
 
-## Next Slice
+## Next Steps
 
-The next slice should create the .NET solution skeleton, starting with:
+Slice 1 has created the foundation. The remaining implementation should proceed in this order:
 
-- API project
-- Worker project
-- shared building blocks
-- Orders module
-- representative order aggregate
-- EF Core Orders DbContext
-- outbox entity
-- Testcontainers-based integration test foundation
-- focused tests for order creation, retrieval, cancellation, outbox persistence, and lifecycle tracking
-- OpenTelemetry bootstrap for API and Worker
-- GitHub Actions CI workflow for restore, build, test, architecture checks, and container build validation
+1. Orders domain model: aggregate, lines, lifecycle, cancellation policy, domain events.
+2. Orders persistence: EF Core mappings, order tables, lifecycle table, outbox, PostgreSQL integration tests.
+3. Application use cases: create, retrieve, cancel, lifecycle query, inventory/pricing/payment/shipping ports.
+4. API completion: replace placeholder controller responses with real use cases and validation.
+5. Messaging and Worker: outbox dispatcher, MassTransit publishing, retry/idempotency placeholders.
+6. Customer journey tests: successful order, inventory rejection, payment failure, retrieve, cancel, dispatch event.
+7. Handover artifacts: ADRs, diagram, module rules, deployment contract.
 
 See [docs/design-memory.md](docs/design-memory.md) for detailed working notes and architectural reasoning.
