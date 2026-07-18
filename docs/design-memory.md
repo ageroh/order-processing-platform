@@ -118,6 +118,11 @@ tests/
   workflows/
     ci.yml
 
+docs/
+  design-memory.md
+  diagrams/
+    architecture-diagrams.md
+
 infra/
   README.md
 ```
@@ -179,6 +184,20 @@ Client
 ```
 
 The API handles synchronous request/response operations. The Worker handles asynchronous integration, outbox dispatch, retries, and future long-running workflows.
+
+## Architecture Diagrams
+
+The diagram artifact is [docs/diagrams/architecture-diagrams.md](diagrams/architecture-diagrams.md).
+
+It includes:
+
+- system context
+- modular monolith/container view
+- create-order sequence
+- order lifecycle state diagram
+- cloud-neutral deployment shape
+
+The diagrams follow a system-design style: explain external dependencies first, then runtime components, then critical flows, then deployment and scaling assumptions.
 
 ## Synchronous Path
 
@@ -385,7 +404,34 @@ Requirements covered:
 - deployment readiness
 - extensibility foundation
 
-### Slice 2: Orders Domain
+### Slice 2: Architecture Diagrams
+
+Status: implemented.
+
+Purpose:
+
+- communicate the architectural shape visually before adding more implementation detail
+- make module boundaries, async flow, lifecycle rules, and deployability assumptions easy to review
+- provide interview-ready artifacts that support discussion and critique
+
+Implemented artifacts:
+
+- system context diagram
+- modular monolith/container diagram
+- create-order sequence diagram
+- order lifecycle state diagram
+- cloud-neutral deployment shape diagram
+
+Requirements covered:
+
+- modularity
+- scalability
+- reliability
+- deployment
+- extensibility
+- architectural communication
+
+### Slice 3: Orders Domain
 
 Purpose:
 
@@ -409,7 +455,7 @@ Requirements covered:
 - testability
 - maintainability
 
-### Slice 3: Orders Persistence
+### Slice 4: Orders Persistence
 
 Purpose:
 
@@ -433,7 +479,7 @@ Requirements covered:
 - reliability
 - scalability foundation
 
-### Slice 4: Application Use Cases
+### Slice 5: Application Use Cases
 
 Purpose:
 
@@ -460,7 +506,7 @@ Requirements covered:
 - calculating pricing, taxes, and additional charges
 - integrating with external inventory, payment, and shipping systems through ports
 
-### Slice 5: API Completion
+### Slice 6: API Completion
 
 Purpose:
 
@@ -485,7 +531,7 @@ Requirements covered:
 - observability foundation
 - reliability through idempotent command handling
 
-### Slice 6: Messaging and Worker
+### Slice 7: Messaging and Worker
 
 Purpose:
 
@@ -509,7 +555,7 @@ Requirements covered:
 - observability
 - extensibility
 
-### Slice 7: Customer Journey Tests
+### Slice 8: Customer Journey Tests
 
 Purpose:
 
@@ -533,7 +579,7 @@ Requirements covered:
 - reliability
 - maintainability
 
-### Slice 8: Handover Artifacts
+### Slice 9: Handover Artifacts
 
 Purpose:
 
@@ -546,7 +592,6 @@ Scope:
 - ADR for Testcontainers-first integration tests
 - ADR for OpenTelemetry
 - ADR for GitHub Actions CI
-- architecture diagram
 - module dependency rules
 - future extraction guidance
 - deployment contract

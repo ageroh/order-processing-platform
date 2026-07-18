@@ -108,6 +108,12 @@ infra/
   README.md
 ```
 
+## Architecture Diagrams
+
+The architecture diagrams are in [docs/diagrams/architecture-diagrams.md](docs/diagrams/architecture-diagrams.md).
+
+They cover the system context, modular monolith/container view, create-order flow, order lifecycle, and cloud-neutral deployment shape.
+
 ## Initial API Surface
 
 ```http
@@ -126,7 +132,7 @@ GET /orders/{orderId}/lifecycle
 
 ## Next Steps
 
-Slice 1 has created the foundation. The remaining implementation should proceed in this order:
+Slice 1 has created the foundation. Slice 2 has added the architecture diagrams. The remaining implementation should proceed in this order:
 
 1. Orders domain model: aggregate, lines, lifecycle, cancellation policy, domain events.
 2. Orders persistence: EF Core mappings, order tables, lifecycle table, outbox, PostgreSQL integration tests.
@@ -134,6 +140,6 @@ Slice 1 has created the foundation. The remaining implementation should proceed 
 4. API completion: replace placeholder controller responses with real use cases and validation.
 5. Messaging and Worker: outbox dispatcher, MassTransit publishing, retry/idempotency placeholders.
 6. Customer journey tests: successful order, inventory rejection, payment failure, retrieve, cancel, dispatch event.
-7. Handover artifacts: ADRs, diagram, module rules, deployment contract.
+7. Handover artifacts: ADRs, module rules, deployment contract, future extraction guidance.
 
 See [docs/design-memory.md](docs/design-memory.md) for detailed working notes and architectural reasoning.
