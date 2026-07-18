@@ -2,6 +2,11 @@ namespace OrderProcessing.Modules.Orders.Domain;
 
 internal sealed class OrderLifecycleEntry
 {
+    private OrderLifecycleEntry()
+    {
+        Description = string.Empty;
+    }
+
     public OrderLifecycleEntry(OrderStatus status, string description, DateTimeOffset occurredAt)
     {
         if (string.IsNullOrWhiteSpace(description))

@@ -6,7 +6,7 @@ namespace OrderProcessing.Architecture.Tests;
 public sealed class ModuleDependencyTests
 {
     [Fact]
-    public void Orders_Module_Should_Expose_Only_The_Service_Registrar_Publicly()
+    public void GivenOrdersModule_WhenPublicTypesAreInspected_ThenOnlyServiceRegistrarIsPublic()
     {
         var publicTypes = typeof(OrdersModuleServiceRegistrar).Assembly
             .GetExportedTypes()

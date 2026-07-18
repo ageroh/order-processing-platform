@@ -8,7 +8,7 @@ namespace OrderProcessing.IntegrationTests;
 public sealed class ApiHealthTests
 {
     [Fact]
-    public async Task Health_Endpoint_Returns_Success()
+    public async Task GivenApiHost_WhenHealthEndpointIsCalled_ThenResponseIsSuccess()
     {
         await using var application = new WebApplicationFactory<Program>()
             .WithWebHostBuilder(builder =>

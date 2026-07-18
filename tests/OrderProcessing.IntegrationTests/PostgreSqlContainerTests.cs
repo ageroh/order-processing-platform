@@ -6,7 +6,7 @@ namespace OrderProcessing.IntegrationTests;
 public sealed class PostgreSqlContainerTests
 {
     [Fact]
-    public async Task PostgreSql_Testcontainer_Can_Start_When_Enabled()
+    public async Task GivenTestcontainersEnabled_WhenPostgreSqlStarts_ThenConnectionStringIsAvailable()
     {
         if (!string.Equals(Environment.GetEnvironmentVariable("RUN_TESTCONTAINERS"), "true", StringComparison.OrdinalIgnoreCase))
         {

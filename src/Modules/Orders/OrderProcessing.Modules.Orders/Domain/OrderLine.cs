@@ -2,6 +2,10 @@ namespace OrderProcessing.Modules.Orders.Domain;
 
 internal sealed class OrderLine
 {
+    private OrderLine()
+    {
+    }
+
     public OrderLine(Guid productId, int quantity)
     {
         if (productId == Guid.Empty)

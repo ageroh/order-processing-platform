@@ -259,6 +259,14 @@ Rules:
 - cross-module communication uses contracts, application services, events, or read models
 - Orders stores product and price snapshots for historical correctness
 
+Current Orders persistence mapping:
+
+- `orders.orders` stores the aggregate root, state, timestamps, cancellation/rejection reasons, optimistic concurrency token, and pricing snapshot columns.
+- `orders.order_lines` stores owned order line rows.
+- `orders.order_lifecycle_events` stores owned lifecycle rows.
+- `orders.outbox_messages` stores outgoing integration events.
+- Domain events are not persisted directly; they are translated to outbox messages by application/worker code in later slices.
+
 ## Reliability
 
 Initial reliability patterns:
@@ -323,6 +331,8 @@ Initial test types:
 - future customer journey tests
 
 No FluentAssertions is used due to licensing concerns. Use Shouldly for readable assertions, xUnit as the test runner, and Moq only where interaction-based mocks are genuinely useful.
+
+Test method names should follow the `GivenX_WhenY_ThenZ` pattern so scenario intent stays readable in CI output and future AI-assisted changes.
 
 Initial customer journey scenarios:
 
@@ -455,11 +465,13 @@ Requirements covered:
 
 ### Slice 4: Orders Persistence
 
+Status: implemented.
+
 Purpose:
 
 - persist the Orders module state with EF Core/PostgreSQL and prove mappings with realistic tests
 
-Scope:
+Implemented artifacts:
 
 - order tables
 - order line tables
@@ -468,7 +480,8 @@ Scope:
 - EF Core configurations
 - optimistic concurrency token
 - Orders schema ownership
-- Testcontainers-backed PostgreSQL integration tests
+- EF model test for table/schema ownership
+- Testcontainers-backed PostgreSQL round-trip test gated by `RUN_TESTCONTAINERS=true`
 
 Requirements covered:
 

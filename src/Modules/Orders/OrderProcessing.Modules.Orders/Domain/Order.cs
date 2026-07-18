@@ -5,6 +5,15 @@ internal sealed class Order
     private readonly List<OrderDomainEvent> _domainEvents = [];
     private readonly List<OrderLifecycleEntry> _lifecycle = [];
     private readonly List<OrderLine> _lines = [];
+    private decimal? _pricingAdditionalChargesAmount;
+    private string? _pricingCurrency;
+    private decimal? _pricingSubtotalAmount;
+    private decimal? _pricingTaxAmount;
+    private decimal? _pricingTotalAmount;
+
+    private Order()
+    {
+    }
 
     private Order(Guid id, Guid customerId, IEnumerable<OrderLine> lines, DateTimeOffset createdAt)
     {
@@ -52,7 +61,26 @@ internal sealed class Order
 
     public string? CancellationReason { get; private set; }
 
-    public OrderPricing? Pricing { get; private set; }
+    public long Version { get; private set; }
+
+    public OrderPricing? Pricing
+    {
+        get
+        {
+            if (_pricingSubtotalAmount is null ||
+                _pricingTaxAmount is null ||
+                _pricingAdditionalChargesAmount is null ||
+                string.IsNullOrWhiteSpace(_pricingCurrency))
+            {
+                return null;
+            }
+
+            return new OrderPricing(
+                new Money(_pricingSubtotalAmount.Value, _pricingCurrency),
+                new Money(_pricingTaxAmount.Value, _pricingCurrency),
+                new Money(_pricingAdditionalChargesAmount.Value, _pricingCurrency));
+        }
+    }
 
     public IReadOnlyCollection<OrderLine> Lines => _lines.AsReadOnly();
 
@@ -72,7 +100,12 @@ internal sealed class Order
         ArgumentNullException.ThrowIfNull(pricing);
         EnsureStatus(OrderStatus.Pending, "Only pending orders can be accepted.");
 
-        Pricing = pricing;
+        _pricingSubtotalAmount = pricing.Subtotal.Amount;
+        _pricingTaxAmount = pricing.Tax.Amount;
+        _pricingAdditionalChargesAmount = pricing.AdditionalCharges.Amount;
+        _pricingTotalAmount = pricing.Total.Amount;
+        _pricingCurrency = pricing.Total.Currency;
+
         Status = OrderStatus.Accepted;
         AcceptedAt = acceptedAt;
 

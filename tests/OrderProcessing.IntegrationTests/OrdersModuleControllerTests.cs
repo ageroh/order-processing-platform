@@ -9,7 +9,7 @@ namespace OrderProcessing.IntegrationTests;
 public sealed class OrdersModuleControllerTests
 {
     [Fact]
-    public async Task Orders_Module_Controller_Is_Discovered_By_The_Api_Host()
+    public async Task GivenApiHost_WhenOrderIsRequested_ThenOrdersModuleControllerIsDiscovered()
     {
         await using var application = new WebApplicationFactory<Program>()
             .WithWebHostBuilder(builder =>

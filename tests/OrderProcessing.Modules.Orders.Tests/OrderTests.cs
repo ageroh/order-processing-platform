@@ -8,7 +8,7 @@ public sealed class OrderTests
     private static readonly DateTimeOffset Now = new(2026, 07, 18, 10, 0, 0, TimeSpan.Zero);
 
     [Fact]
-    public void CreatePending_Requires_At_Least_One_Line()
+    public void GivenNoOrderLines_WhenCreatingPendingOrder_ThenExceptionIsThrown()
     {
         var act = () => Order.CreatePending(Guid.NewGuid(), Guid.NewGuid(), [], Now);
 
@@ -18,7 +18,7 @@ public sealed class OrderTests
     }
 
     [Fact]
-    public void CreatePending_Records_Initial_Lifecycle_And_Domain_Event()
+    public void GivenValidOrderLines_WhenCreatingPendingOrder_ThenInitialLifecycleAndEventAreRecorded()
     {
         var order = CreatePendingOrder();
 
@@ -34,7 +34,7 @@ public sealed class OrderTests
     }
 
     [Fact]
-    public void Accept_Moves_Pending_Order_To_Accepted_And_Stores_Pricing()
+    public void GivenPendingOrder_WhenAccepted_ThenStatusAndPricingSnapshotAreStored()
     {
         var order = CreatePendingOrder();
         var pricing = new OrderPricing(
@@ -55,7 +55,7 @@ public sealed class OrderTests
     }
 
     [Fact]
-    public void Reject_Moves_Pending_Order_To_Rejected_With_Reason()
+    public void GivenPendingOrder_WhenRejected_ThenStatusAndReasonAreStored()
     {
         var order = CreatePendingOrder();
 
@@ -69,7 +69,7 @@ public sealed class OrderTests
     }
 
     [Fact]
-    public void Cancel_Allows_Full_Cancellation_When_Order_Is_Pending()
+    public void GivenPendingOrder_WhenCancelled_ThenFullCancellationIsRecorded()
     {
         var order = CreatePendingOrder();
 
@@ -81,7 +81,7 @@ public sealed class OrderTests
     }
 
     [Fact]
-    public void Cancel_Allows_Full_Cancellation_When_Order_Is_Accepted()
+    public void GivenAcceptedOrder_WhenCancelled_ThenFullCancellationIsRecorded()
     {
         var order = CreateAcceptedOrder();
 
@@ -92,7 +92,7 @@ public sealed class OrderTests
     }
 
     [Fact]
-    public void Cancel_Does_Not_Allow_Cancelling_Rejected_Order()
+    public void GivenRejectedOrder_WhenCancelled_ThenExceptionIsThrown()
     {
         var order = CreatePendingOrder();
         order.Reject("Payment authorization failed.", Now.AddMinutes(1));
@@ -105,7 +105,7 @@ public sealed class OrderTests
     }
 
     [Fact]
-    public void OrderLine_Requires_Positive_Quantity()
+    public void GivenNonPositiveQuantity_WhenOrderLineIsCreated_ThenExceptionIsThrown()
     {
         var act = () => new OrderLine(Guid.NewGuid(), 0);
 
@@ -115,7 +115,7 @@ public sealed class OrderTests
     }
 
     [Fact]
-    public void OrderPricing_Requires_One_Currency()
+    public void GivenMixedCurrencies_WhenOrderPricingIsCreated_ThenExceptionIsThrown()
     {
         var act = () => new OrderPricing(
                 new Money(100m, "EUR"),
