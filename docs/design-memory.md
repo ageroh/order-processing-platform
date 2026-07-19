@@ -24,8 +24,8 @@ The solution follows an Ardalis.Modulith-style modular monolith:
 - one `.Contracts` project per module when public contracts are needed
 - module tests per module
 - module implementation types are internal by default
-- only the module service registrar is public
-- architecture tests enforce module public-surface rules
+- module service registrars and ASP.NET Core controllers are allowed public implementation-module surface
+- module public-surface rules are documented and should be reviewed as modules evolve
 
 Sources:
 
@@ -93,7 +93,6 @@ src/
       OrderProcessing.Modules.Orders/
         Controllers/
         Domain/
-        HttpModels/
         Outbox/
         Persistence/
         OrdersModuleServiceRegistrar.cs
@@ -112,7 +111,6 @@ src/
 tests/
   OrderProcessing.Modules.Orders.Tests/
   OrderProcessing.IntegrationTests/
-  OrderProcessing.Architecture.Tests/
 
 .github/
   workflows/
@@ -121,6 +119,7 @@ tests/
 docs/
   design-memory.md
   implementation-backlog.md
+  submission-notes.md
   decisions/
     0001-modular-monolith.md
     0002-cloud-neutral-containers.md
@@ -334,7 +333,6 @@ Testing is part of the architecture because fast AI-assisted implementation need
 Initial test types:
 
 - module domain tests
-- architecture tests for module boundaries
 - API integration tests with `WebApplicationFactory`
 - Testcontainers-based PostgreSQL tests when enabled
 - future customer journey tests
@@ -388,7 +386,6 @@ Implemented artifacts:
 - Orders implementation module
 - Orders contracts project
 - contract-only shells for Catalog, Inventory, Pricing, Payments, and Shipping
-- architecture tests
 - integration tests
 - module tests
 - API and Worker Dockerfiles

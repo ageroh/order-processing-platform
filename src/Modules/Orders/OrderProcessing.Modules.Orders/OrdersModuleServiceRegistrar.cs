@@ -1,10 +1,8 @@
 using Microsoft.AspNetCore.Mvc.ApplicationParts;
-using Microsoft.AspNetCore.Mvc.Controllers;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using OrderProcessing.Modules.Orders.Persistence;
-using System.Reflection;
 
 namespace OrderProcessing.Modules.Orders;
 
@@ -24,22 +22,8 @@ public static class OrdersModuleServiceRegistrar
         if (mvcBuilder is not null)
         {
             mvcBuilder.PartManager.ApplicationParts.Add(new AssemblyPart(typeof(OrdersModuleServiceRegistrar).Assembly));
-            mvcBuilder.PartManager.FeatureProviders.Add(new InternalControllerFeatureProvider());
         }
 
         return services;
-    }
-
-    private sealed class InternalControllerFeatureProvider : ControllerFeatureProvider
-    {
-        protected override bool IsController(TypeInfo typeInfo)
-        {
-            if (!typeInfo.IsClass || typeInfo.IsAbstract || typeInfo.ContainsGenericParameters)
-            {
-                return false;
-            }
-
-            return typeInfo.Name.EndsWith("Controller", StringComparison.OrdinalIgnoreCase);
-        }
     }
 }

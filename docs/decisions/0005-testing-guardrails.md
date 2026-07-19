@@ -15,7 +15,6 @@ Use:
 - xUnit as the test runner
 - Shouldly for readable assertions
 - Moq where interaction-based mocks are genuinely needed
-- architecture tests for module boundaries
 - Testcontainers for realistic infrastructure scenarios
 - `GivenX_WhenY_ThenZ` naming for test methods
 

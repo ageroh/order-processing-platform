@@ -93,7 +93,6 @@ src/
 tests/
   OrderProcessing.Modules.Orders.Tests/
   OrderProcessing.IntegrationTests/
-  OrderProcessing.Architecture.Tests/
 
 .github/
   workflows/
@@ -119,6 +118,8 @@ They include a simple system design overview and the order lifecycle.
 Architecture decisions are recorded in [docs/decisions](docs/decisions).
 
 The implementation handover backlog is in [docs/implementation-backlog.md](docs/implementation-backlog.md).
+
+Submission and interview notes are in [docs/submission-notes.md](docs/submission-notes.md).
 
 ## Initial API Surface
 

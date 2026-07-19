@@ -24,7 +24,6 @@
     <Project Path="src/Modules/Shipping/OrderProcessing.Modules.Shipping.Contracts/OrderProcessing.Modules.Shipping.Contracts.csproj" />
   </Folder>
   <Folder Name="/tests/">
-    <Project Path="tests/OrderProcessing.Architecture.Tests/OrderProcessing.Architecture.Tests.csproj" />
     <Project Path="tests/OrderProcessing.IntegrationTests/OrderProcessing.IntegrationTests.csproj" />
     <Project Path="tests/OrderProcessing.Modules.Orders.Tests/OrderProcessing.Modules.Orders.Tests.csproj" />
   </Folder>

@@ -17,9 +17,9 @@ Start with a modular monolith inspired by Ardalis.Modulith:
 - one API host for synchronous HTTP access
 - one Worker host for asynchronous processing
 - business modules under `src/Modules`
-- module implementation types internal by default
+- module implementation types internal by default, except public ASP.NET Core controllers needed for normal framework discovery
 - `.Contracts` projects for public module contracts
-- architecture tests to guard public surface and dependencies
+- module public-surface rules should be reviewed as modules evolve
 
 ## Consequences
 

@@ -1,12 +1,12 @@
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using OrderProcessing.Modules.Orders.HttpModels;
+using OrderProcessing.Modules.Orders.Contracts;
 
 namespace OrderProcessing.Modules.Orders.Controllers;
 
 [ApiController]
 [Route("orders")]
-internal sealed class OrdersController : ControllerBase
+public sealed class OrdersController : ControllerBase
 {
     private const string CorrelationIdHeader = "X-Correlation-Id";
 

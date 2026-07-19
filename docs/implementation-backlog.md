@@ -52,6 +52,7 @@ Implemented foundation:
    - publish through MassTransit
    - add retry policy
    - add failure visibility
+   - replace the current Worker heartbeat placeholder with real dispatch and workflow processing
 
 ## Open Questions
 
