@@ -1,4 +1,4 @@
-# Order Processing Platform
+﻿# Order Processing Platform
 
 Architecture skeleton for a modular Order Processing Platform using .NET 10 and EF Core 10.
 
@@ -109,9 +109,9 @@ infra/
 
 ## Architecture Diagrams
 
-The architecture diagrams are in [docs/diagrams/architecture-diagrams.md](docs/diagrams/architecture-diagrams.md).
+The architecture diagrams are documented in [docs/diagrams/architecture-diagrams.md](docs/diagrams/architecture-diagrams.md), with the Structurizr DSL workspace in [docs/diagrams/workspace.dsl](docs/diagrams/workspace.dsl).
 
-They include a simple system design overview and the order lifecycle.
+They include C4-style system context, container, module, dynamic flow, lifecycle, and deployment views.
 
 ## Architecture Decisions
 
@@ -150,3 +150,4 @@ Recommended delivery path:
 5. Finalize security, observability backend, and deployment topology.
 
 See [docs/design-memory.md](docs/design-memory.md) for detailed working notes and architectural reasoning.
+

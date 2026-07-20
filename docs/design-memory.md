@@ -1,4 +1,4 @@
-# Design Memory
+﻿# Design Memory
 
 Detailed architecture notes for the Order Processing Platform. This file records the current decisions and implementation plan; it avoids repeating questions that have already been answered.
 
@@ -195,14 +195,18 @@ The API handles synchronous request/response operations. The Worker handles asyn
 
 ## Architecture Diagrams
 
-The diagram artifact is [docs/diagrams/architecture-diagrams.md](diagrams/architecture-diagrams.md).
+The diagram artifact is [docs/diagrams/architecture-diagrams.md](diagrams/architecture-diagrams.md), backed by [docs/diagrams/workspace.dsl](diagrams/workspace.dsl).
 
 It includes:
 
-- system design overview
-- order lifecycle state diagram
+- Structurizr/C4 system context view
+- Structurizr/C4 container view
+- module view
+- create-order dynamic view
+- order lifecycle custom view
+- cloud-neutral deployment view
 
-The diagrams follow a system-design style: explain external dependencies, runtime components, async boundaries, deployment portability, and lifecycle rules without splitting the story across too many visuals.
+The diagrams follow a C4/system-design style: explain external dependencies, runtime components, module boundaries, async flow, deployment portability, and lifecycle rules without requiring cloud-specific infrastructure.
 
 ## Synchronous Path
 
@@ -429,8 +433,8 @@ Purpose:
 
 Implemented artifacts:
 
-- system design overview diagram
-- order lifecycle state diagram
+- Structurizr/C4 diagram workspace
+- order lifecycle custom view
 
 Requirements covered:
 
@@ -636,3 +640,5 @@ Requirements covered:
 ## AI Usage
 
 AI can help scaffold, refactor, and generate tests quickly. Human judgment remains responsible for module boundaries, consistency decisions, deployment assumptions, and deciding when abstractions are justified.
+
+

@@ -1,4 +1,4 @@
-# Submission Notes
+﻿# Submission Notes
 
 These notes summarize how to present and defend the architecture skeleton.
 
@@ -142,6 +142,7 @@ Strengths:
 - Clear module boundaries.
 - Good delivery-team handover artifacts.
 - Early test, observability, CI, and container foundations.
+- Structurizr/C4 diagram source is repo-native and reviewable.
 - Representative domain and persistence depth without implementing every use case.
 
 Tradeoffs:
@@ -152,3 +153,4 @@ Tradeoffs:
 - The domain model is representative and should evolve with real customer rules.
 
 This is acceptable because the skeleton is designed to make those decisions explicit rather than hide them inside incomplete implementation code.
+
