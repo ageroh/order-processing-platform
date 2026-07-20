@@ -1,6 +1,6 @@
 # Order Processing Platform
 
-Compact architecture skeleton for an Order Processing Platform using .NET 10, EF Core 10, and PostgreSQL.
+Compact architecture skeleton for an Order Processing Platform using .NET 10, EF Core 10, and PostgreSQL as the default database.
 
 ## Intent
 
@@ -17,8 +17,8 @@ flowchart LR
     api[OrderProcessing.Api replicas]
     orders[Orders module]
     db[(PostgreSQL\norders schema)]
-    broker[Message broker\nMassTransit transport]
-    asyncConsumers[Async consumers\npayment capture / shipping / notifications]
+    broker[MassTransit transport\nin-memory now / broker later]
+    workerConsumers[Worker consumers\npayment / shipping / notifications]
     worker[OrderProcessing.Worker replicas]
     providers[External providers\ninventory / payment / shipping]
     otel[OpenTelemetry Collector]
@@ -30,12 +30,12 @@ flowchart LR
     orders -->|order state + outbox| db
     worker -->|simple outbox relay| db
     worker -->|publishes integration events| broker
-    broker -->|fan-out / retry / buffering| asyncConsumers
-    asyncConsumers -->|provider adapters| providers
+    broker -->|fan-out / retry / buffering| workerConsumers
+    workerConsumers -->|provider adapters| providers
 
     api -. traces / metrics / logs .-> otel
     worker -. traces / metrics / logs .-> otel
-    asyncConsumers -. traces / metrics / logs .-> otel
+    workerConsumers -. traces / metrics / logs .-> otel
     db -. metrics / logs .-> otel
     broker -. metrics / logs .-> otel
     otel --> obs
@@ -47,6 +47,7 @@ flowchart LR
 - Worker handles async integration and outbox work.
 - Orders is the source of truth for order status, lifecycle, cancellation, and rejection.
 - Catalog, Inventory, Pricing, Payments, and Shipping are capability boundaries behind the order workflow.
+- PostgreSQL is the default persistence choice for this skeleton, not a hard platform constraint.
 - The database outbox is the reliability boundary; a simple Worker relay moves records to the broker.
 - MassTransit/broker is the async delivery and fan-out mechanism after the outbox relay.
 - OpenTelemetry, GitHub Actions, Docker Compose, and Testcontainers are part of the foundation.
@@ -55,6 +56,8 @@ flowchart LR
 ## Messaging Note
 
 MassTransit is kept intentionally, but only on the async side. The API should persist order state and outbox records in the same database transaction. The Worker owns the outbox relay and publishes integration events through MassTransit so broker choice stays replaceable.
+
+The skeleton uses in-memory MassTransit wiring. The production broker is selected later.
 
 ## API
 
@@ -136,7 +139,7 @@ The other endpoints can remain placeholders until their slice starts.
 ## Decisions To Implement
 
 - Identity: use OIDC/JWT bearer authentication. Use policy-based authorization with `orders:read`, `orders:create`, and `orders:cancel` scopes. Keycloak is the local/reference provider; a customer IdP can replace it later if it supports OIDC.
-- Observability: export telemetry through OpenTelemetry Collector. Use OpenSearch and OpenSearch Dashboards as the default self-hosted observability store and UI. Elasticsearch is an acceptable alternative when the chosen distribution/license is approved.
+- Observability: the current skeleton uses console OpenTelemetry exporters. The target is OpenTelemetry Collector with OpenSearch and OpenSearch Dashboards as the default self-hosted observability store and UI. Elasticsearch is an acceptable alternative when the chosen distribution/license is approved.
 - Inventory: use reservation, not validation-only. Creating an order reserves stock; cancellation releases the reservation when fulfillment has not started.
 - Payment: authorize during order creation. Capture later from the Worker when fulfillment starts; cancellation before capture voids the authorization.
 
