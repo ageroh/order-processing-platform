@@ -1,127 +1,32 @@
-﻿# Order Processing Platform
+# Order Processing Platform
 
-Architecture skeleton for a modular Order Processing Platform using .NET 10 and EF Core 10.
+Compact architecture skeleton for an Order Processing Platform using .NET 10, EF Core 10, and PostgreSQL.
 
-This repository is intended to become an implementation-ready foundation for a delivery team. The first goal is to agree the architectural direction and assumptions, then build the solution in slices.
+## Intent
 
-## Design Direction
-
-The proposed starting architecture is a cloud-neutral, containerized modular monolith with separate API and background worker processes.
+Build a modular monolith first. Keep module boundaries clear, ship API and Worker as portable Docker images, and defer cloud/runtime choices until real constraints are known.
 
 ```text
 Client
   -> OrderProcessing.Api
   -> Orders module
-  -> EF Core persistence
+  -> PostgreSQL
   -> Outbox
   -> OrderProcessing.Worker
-  -> External inventory, payment, tax, and shipping adapters
+  -> External providers
 ```
 
-This gives us strong module boundaries without introducing distributed-system complexity before the business boundaries, scale needs, and customer infrastructure constraints are confirmed.
+## Assumptions
 
-## Core Assumptions
+- API handles synchronous HTTP work.
+- Worker handles async integration and outbox work.
+- Orders is the source of truth for order status, lifecycle, cancellation, and rejection.
+- Catalog, Inventory, Pricing, Payments, and Shipping are capability boundaries behind the order workflow.
+- MassTransit hides the broker choice.
+- OpenTelemetry, GitHub Actions, Docker Compose, and Testcontainers are part of the foundation.
+- Testcontainers-backed PostgreSQL tests run in CI with `RUN_TESTCONTAINERS=true`.
 
-- The platform targets .NET 10 and EF Core 10.
-- The first implementation should be a modular monolith, not microservices.
-- The production runtime platform is unknown.
-- The first deployment contract is portable Docker images for the API and Worker.
-- Those containers should be able to run later on Azure Container Apps, AWS ECS/Fargate, Kubernetes, Docker on virtual machines, private cloud, or another customer-approved platform.
-- The initial runtime shape should include:
-  - `OrderProcessing.Api` for synchronous HTTP APIs.
-  - `OrderProcessing.Worker` for asynchronous processing, outbox dispatch, retries, and integration workflows.
-- The application should run locally with Docker Compose.
-- The customer context is assumed to be greenfield.
-- Source control and CI should be hosted in GitHub.
-- GitHub Actions should validate every pull request before merge.
-- PostgreSQL is the default relational database, with schema boundaries per module.
-- EF Core should be used behind module-owned persistence boundaries.
-- External inventory, payment, tax, and shipping systems should be integrated through ports and adapters.
-- Messaging should be implemented through MassTransit so transport details stay outside business modules.
-- The concrete message transport is an infrastructure decision and should be replaceable.
-- Business modules should not reference broker SDKs directly.
-- Order state is authoritative in the Orders module.
-- Order creation is a workflow, not simple CRUD.
-- Orders should be accepted only after inventory availability, pricing, and payment authorization succeed.
-- The initial order lifecycle uses four states: `Pending`, `Accepted`, `Cancelled`, and `Rejected`.
-- Cancellation is full-order cancellation only.
-- Cancellation rules belong in the domain model.
-- Inventory availability validation, pricing, payment, and shipping are separate capabilities with clear contracts.
-- Reliability should be designed around idempotency, retries, outbox/inbox patterns, and observable workflows.
-- Automated tests are a first-class architecture boundary because most implementation work is expected to be produced quickly by AI-assisted agents.
-- Testcontainers should be used early for realistic database, messaging, and API integration scenarios.
-- OpenTelemetry should be wired from the beginning for traces, metrics, logs, and correlation across API, worker, database, messaging, and external adapters.
-
-## Proposed Modules
-
-```text
-Orders
-  Owns order aggregate, lifecycle, cancellation rules, order history, and order persistence.
-
-Catalog
-  Owns product identity, product status, and sellability rules.
-
-Inventory
-  Owns availability and reservation contracts, plus inventory-provider adapters.
-
-Pricing
-  Owns pricing, tax, additional charges, and price breakdown contracts.
-
-Payments
-  Owns payment authorization, capture placeholders, provider integration, and callbacks.
-
-Shipping
-  Owns shipment creation, carrier integration placeholders, and tracking callbacks.
-```
-
-## Expected Solution Shape
-
-```text
-src/
-  OrderProcessing.Api/
-  OrderProcessing.Worker/
-  Modules/
-    Orders/
-      OrderProcessing.Modules.Orders/
-      OrderProcessing.Modules.Orders.Contracts/
-    Catalog/
-    Inventory/
-    Pricing/
-    Payments/
-    Shipping/
-
-tests/
-  OrderProcessing.Modules.Orders.Tests/
-  OrderProcessing.IntegrationTests/
-
-.github/
-  workflows/
-    ci.yml
-
-docs/
-  design-memory.md
-  decisions/
-  diagrams/
-
-infra/
-  README.md
-```
-
-## Architecture Diagrams
-
-The architecture diagrams are documented in [docs/diagrams/architecture-diagrams.md](docs/diagrams/architecture-diagrams.md), with the Structurizr DSL workspace in [docs/diagrams/workspace.dsl](docs/diagrams/workspace.dsl).
-
-They include C4-style system context, container, module, dynamic flow, lifecycle, and deployment views.
-
-## Architecture Decisions
-
-Architecture decisions are recorded in [docs/decisions](docs/decisions).
-
-The implementation handover backlog is in [docs/implementation-backlog.md](docs/implementation-backlog.md).
-
-Submission and interview notes are in [docs/submission-notes.md](docs/submission-notes.md).
-
-## Initial API Surface
+## API
 
 ```http
 POST /orders
@@ -130,24 +35,47 @@ POST /orders/{orderId}/cancel
 GET /orders/{orderId}/lifecycle
 ```
 
-## Remaining Decisions
+Inventory, pricing, payment, and shipping are internal boundaries for now. Add public endpoints only for user-facing workflows or provider callbacks.
 
-- Final MassTransit production transport.
-- Production runtime platform for the Docker images.
-- Identity provider.
-- Final observability backend.
+## Modules
 
-## Next Steps
+- `Orders`: aggregate, lifecycle, cancellation, persistence, outbox.
+- `Catalog`: product identity and sellability contracts.
+- `Inventory`: availability and future reservation contracts.
+- `Pricing`: price, tax, and charge calculation contracts.
+- `Payments`: authorization, future capture, and callbacks.
+- `Shipping`: shipment initiation and tracking callbacks.
 
-Slices 1-5 have produced the implementation-ready skeleton and handover artifacts. The remaining work should be treated as delivery backlog, not as part of this skeleton exercise.
+## Current Skeleton
 
-Recommended delivery path:
+- API and Worker hosts.
+- Orders module with domain, persistence mapping, controller contract, and tests.
+- Contract shells for Catalog, Inventory, Pricing, Payments, and Shipping.
+- Dockerfiles, Docker Compose, GitHub Actions CI, OpenTelemetry setup, and Testcontainers-based integration tests.
 
-1. Add command/query boundary contracts and external capability ports.
-2. Implement one thin create-order vertical path with deterministic fake adapters.
-3. Add customer journey tests around the MVP path.
-4. Add outbox dispatch and production transport when the customer runtime is known.
-5. Finalize security, observability backend, and deployment topology.
+## Backlog
 
-See [docs/design-memory.md](docs/design-memory.md) for detailed working notes and architectural reasoning.
+1. Add command/query contracts for create, get, cancel, and lifecycle.
+2. Add ports for inventory, pricing, payment, and shipping.
+3. Implement a thin create-order path with deterministic fake adapters.
+4. Add journey tests for success, rejection, retrieval, cancellation, and outbox persistence.
+5. Implement outbox dispatch through MassTransit.
 
+## Delivery Notes
+
+- Start with the Orders workflow; do not expand into microservices or extra public APIs yet.
+- Add tests before each behavior slice, especially around order state transitions and persistence.
+- Keep external systems behind ports and use deterministic fake adapters until real provider contracts are known.
+- Persist order state and outbox messages in one transaction.
+- Keep module internals private unless another module or host genuinely needs a contract.
+- Treat production runtime, broker, identity, and observability backend as explicit decisions, not assumptions.
+- Run restore, build, format, and tests before handing over changes.
+
+## Open Decisions
+
+- Production runtime platform.
+- Production message transport.
+- Identity provider and authorization rules.
+- Observability backend.
+- Inventory reservation vs. validation-only behavior.
+- Payment capture timing.
