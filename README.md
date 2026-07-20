@@ -4,9 +4,17 @@ Compact architecture skeleton for an Order Processing Platform using .NET 10, EF
 
 ## Intent
 
-Build a modular monolith first. Keep module boundaries clear, ship API and Worker as portable Docker images, and defer cloud/runtime choices until real constraints are known.
+Provide artifacts that let a delivery team start implementation next day. The repository communicates architecture, module boundaries, initial contracts, representative domain/persistence code, CI, tests, and deployment shape.
 
-This skeleton is ready for a delivery team to pick up next day. The remaining work is intentionally listed as delivery backlog, not missing foundation work.
+The goal is not a complete product. The remaining work is intentionally listed as delivery backlog, not missing foundation work.
+
+## Assignment Fit
+
+- Architectural vision: modular monolith with API and Worker processes.
+- Design decisions: documented directly in this README.
+- Implementation approach: first vertical slice is defined under Next-Day Pickup.
+- Artifacts: solution structure, contracts, representative Orders code, persistence mapping, tests, CI, Docker, and architecture diagram.
+- Timebox judgment: depth is focused on Orders because it is the central workflow; other capabilities are contract boundaries.
 
 ## Architecture
 
@@ -43,6 +51,7 @@ flowchart LR
 
 ## Assumptions
 
+- Modular monolith first; no microservices until boundaries and scale needs are proven.
 - API handles synchronous HTTP work.
 - Worker handles async integration and outbox work.
 - Orders is the source of truth for order status, lifecycle, cancellation, and rejection.
@@ -52,6 +61,14 @@ flowchart LR
 - MassTransit/broker is the async delivery and fan-out mechanism after the outbox relay.
 - OpenTelemetry, GitHub Actions, Docker Compose, and Testcontainers are part of the foundation.
 - Testcontainers-backed PostgreSQL tests run in CI with `RUN_TESTCONTAINERS=true`.
+
+## Why This Shape
+
+- Keeps delivery simple while preserving clear module ownership.
+- Avoids premature distributed-system complexity.
+- Separates synchronous API work from async integration work.
+- Uses the outbox pattern so order state and integration intent are committed together.
+- Keeps broker, identity provider, observability backend, and runtime platform replaceable.
 
 ## Messaging Note
 
@@ -85,6 +102,13 @@ Inventory, pricing, payment, and shipping are internal boundaries for now. Add p
 - Orders module with domain, persistence mapping, controller contract, and tests.
 - Contract shells for Catalog, Inventory, Pricing, Payments, and Shipping.
 - Dockerfiles, Docker Compose, GitHub Actions CI, OpenTelemetry setup, MassTransit Worker wiring, and Testcontainers-based integration tests.
+
+## Intentional Gaps
+
+- Orders endpoints expose the contract but still return placeholder responses.
+- Provider integrations are represented as module boundaries, not real adapters.
+- The Worker heartbeat is a placeholder for outbox relay and dispatch.
+- Identity, authorization policies, OpenSearch export, and production broker wiring are decisions to implement.
 
 ## Scalability
 
