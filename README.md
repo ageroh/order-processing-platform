@@ -10,36 +10,33 @@ This skeleton is ready for a delivery team to pick up next day. The remaining wo
 
 ## Architecture
 
-```text
-                   +----------------------+
-                   |        Client        |
-                   +----------+-----------+
-                              |
-                              v
-                   +----------------------+
-                   |  OrderProcessing.Api |
-                   +----------+-----------+
-                              |
-                              v
-                   +----------------------+
-                   |    Orders Module     |
-                   +----+------------+----+
-                        |            |
-                        v            v
-              +--------------+   +----------------------+
-              |  PostgreSQL  |   | Capability Contracts |
-              | orders schema|   | Catalog/Inventory/   |
-              +------+-------+   | Pricing/Payments/    |
-                     |           | Shipping             |
-                     v           +----------+-----------+
-              +--------------+              |
-              |    Outbox    |              v
-              +------+-------+   +----------------------+
-                     |           |  External Providers  |
-                     v           +----------------------+
-              +--------------+
-              |    Worker    |
-              +--------------+
+```mermaid
+flowchart LR
+    customer[Customer / Client]
+    lb[Load balancer]
+    api[OrderProcessing.Api replicas]
+    orders[Orders module]
+    db[(PostgreSQL\norders schema)]
+    broker[Message broker\nMassTransit transport]
+    worker[OrderProcessing.Worker replicas]
+    providers[External providers\ninventory / payment / shipping]
+    otel[OpenTelemetry Collector]
+    obs[(OpenSearch\nDashboards)]
+
+    customer -->|HTTPS / JSON| lb
+    lb -->|horizontal scale| api
+    api --> orders
+    orders -->|order state + outbox| db
+    worker -->|polls outbox| db
+    worker -->|publishes / consumes| broker
+    broker -->|async work| worker
+    worker --> providers
+
+    api -. traces / metrics / logs .-> otel
+    worker -. traces / metrics / logs .-> otel
+    db -. metrics / logs .-> otel
+    broker -. metrics / logs .-> otel
+    otel --> obs
 ```
 
 ## Assumptions
