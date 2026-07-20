@@ -29,7 +29,7 @@ flowchart LR
     workerConsumers[Worker consumers\npayment / shipping / notifications]
     worker[OrderProcessing.Worker replicas]
     providers[External providers\ninventory / payment / shipping]
-    otel[OpenTelemetry Collector]
+    otel[OpenTelemetry Collector\ntarget]
     obs[(OpenSearch\nDashboards)]
 
     customer -->|HTTPS / JSON| lb
@@ -56,7 +56,7 @@ flowchart LR
 - Worker handles async integration and outbox work.
 - Orders is the source of truth for order status, lifecycle, cancellation, and rejection.
 - Catalog, Inventory, Pricing, Payments, and Shipping are capability boundaries behind the order workflow.
-- PostgreSQL is the default persistence choice for this skeleton, not a hard platform constraint.
+- PostgreSQL is the default implementation database; replacing it would require provider, mapping, and test changes.
 - The database outbox is the reliability boundary; a simple Worker relay moves records to the broker.
 - MassTransit/broker is the async delivery and fan-out mechanism after the outbox relay.
 - OpenTelemetry, GitHub Actions, Docker Compose, and Testcontainers are part of the foundation.
@@ -87,6 +87,14 @@ GET /orders/{orderId}/lifecycle
 
 Inventory, pricing, payment, and shipping are internal boundaries for now. Add public endpoints only for user-facing workflows or provider callbacks.
 
+## Functional Coverage
+
+- Create order: API contract, command interface, provider ports, domain model; implementation is next slice.
+- Retrieve order: API contract and persistence model exist; query handler is backlog.
+- Cancel order: API contract and domain cancellation rule exist; application handler is backlog.
+- Lifecycle: domain lifecycle entries and persistence mapping exist; query endpoint is backlog.
+- Inventory, pricing, payment, shipping: represented as module boundaries and ports; real adapters are backlog.
+
 ## Modules
 
 - `Orders`: aggregate, lifecycle, cancellation, persistence, outbox.
@@ -110,36 +118,19 @@ Inventory, pricing, payment, and shipping are internal boundaries for now. Add p
 - The Worker heartbeat is a placeholder for outbox relay and dispatch.
 - Identity, authorization policies, OpenSearch export, and production broker wiring are decisions to implement.
 
-## Scalability
+## Non-Functional Coverage
 
-No fixed request-per-second claim is made without load testing. The design is intended to scale by:
-
-- running multiple API containers behind a load balancer
-- scaling Worker containers independently for outbox relay and integration throughput
-- scaling broker consumers when async integrations increase
-- keeping the relational database as the first capacity bottleneck to monitor
-- using indexes, connection pooling, idempotency, and optimistic concurrency around order writes
-- moving slow provider calls behind async workflows when they do not need to block the caller
-
-Before production, define target load and validate it with tests such as:
-
-- peak `POST /orders` requests per minute
-- order read traffic for `GET /orders/{orderId}`
-- cancellation rate
-- outbox dispatch latency
-- provider timeout and retry behavior
-
-## Backlog
-
-1. Add query contracts for get, cancel, and lifecycle.
-2. Implement the existing create-order command and provider ports.
-3. Add deterministic fake adapters for inventory, pricing, and payment.
-4. Add journey tests for success, rejection, retrieval, cancellation, and outbox persistence.
-5. Implement a simple Worker outbox relay and MassTransit dispatch.
+- Modularity: modules are separated under `src/Modules`; Orders owns its domain and schema.
+- Reliability: order state and outbox are persisted together.
+- Testability: domain, API host, EF model, and PostgreSQL/Testcontainers tests are included.
+- Observability: OpenTelemetry is wired with console exporters; Collector/OpenSearch is the target.
+- Deployment: API and Worker Dockerfiles plus Docker Compose are included.
+- Security: OIDC/JWT and policy scopes are selected but not wired yet.
+- Scalability: API, Worker, and broker consumers can scale horizontally; database capacity, indexes, connection pooling, and outbox latency should be validated with load tests before production.
 
 ## Next-Day Pickup
 
-The skeleton is ready for a delivery team to continue from the first vertical slice. The first developer task should be:
+The first delivery slice should:
 
 1. Keep the existing Orders endpoints.
 2. Implement `CreateOrderCommand` and `IOrdersCommandHandler` inside the Orders module.
@@ -147,7 +138,7 @@ The skeleton is ready for a delivery team to continue from the first vertical sl
 4. Persist the order and outbox message in one transaction.
 5. Replace the `POST /orders` placeholder with a real accepted/rejected response.
 
-The other endpoints can remain placeholders until their slice starts.
+Then continue with query/cancel/lifecycle handlers, journey tests, and the Worker outbox relay.
 
 ## Delivery Notes
 
@@ -160,14 +151,10 @@ The other endpoints can remain placeholders until their slice starts.
 - Treat production runtime, identity, and observability backend as explicit decisions, not assumptions.
 - Run restore, build, format, and tests before handing over changes.
 
-## Decisions To Implement
+## Decisions
 
 - Identity: use OIDC/JWT bearer authentication. Use policy-based authorization with `orders:read`, `orders:create`, and `orders:cancel` scopes. Keycloak is the local/reference provider; a customer IdP can replace it later if it supports OIDC.
 - Observability: the current skeleton uses console OpenTelemetry exporters. The target is OpenTelemetry Collector with OpenSearch and OpenSearch Dashboards as the default self-hosted observability store and UI. Elasticsearch is an acceptable alternative when the chosen distribution/license is approved.
 - Inventory: use reservation, not validation-only. Creating an order reserves stock; cancellation releases the reservation when fulfillment has not started.
 - Payment: authorize during order creation. Capture later from the Worker when fulfillment starts; cancellation before capture voids the authorization.
-
-## Still Open
-
-- Production runtime platform.
-- Production MassTransit transport.
+- Runtime and broker: keep Docker images portable; choose the production host and MassTransit transport when deployment constraints are known.
