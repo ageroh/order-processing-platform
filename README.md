@@ -23,7 +23,7 @@ Client
 - Orders is the source of truth for order status, lifecycle, cancellation, and rejection.
 - Catalog, Inventory, Pricing, Payments, and Shipping are capability boundaries behind the order workflow.
 - MassTransit hides the broker choice.
-- OpenTelemetry, GitHub Actions, Docker Compose, and Testcontainers are part of the foundation.
+- OpenTelemetry, OpenSearch, GitHub Actions, Docker Compose, and Testcontainers are part of the foundation.
 - Testcontainers-backed PostgreSQL tests run in CI with `RUN_TESTCONTAINERS=true`.
 
 ## API
@@ -53,6 +53,24 @@ Inventory, pricing, payment, and shipping are internal boundaries for now. Add p
 - Contract shells for Catalog, Inventory, Pricing, Payments, and Shipping.
 - Dockerfiles, Docker Compose, GitHub Actions CI, OpenTelemetry setup, and Testcontainers-based integration tests.
 
+## Scalability
+
+No fixed request-per-second claim is made without load testing. The design is intended to scale by:
+
+- running multiple API containers behind a load balancer
+- scaling Worker containers independently for outbox and integration throughput
+- keeping PostgreSQL as the first capacity bottleneck to monitor
+- using indexes, connection pooling, idempotency, and optimistic concurrency around order writes
+- moving slow provider calls behind async workflows when they do not need to block the caller
+
+Before production, define target load and validate it with tests such as:
+
+- peak `POST /orders` requests per minute
+- order read traffic for `GET /orders/{orderId}`
+- cancellation rate
+- outbox dispatch latency
+- provider timeout and retry behavior
+
 ## Backlog
 
 1. Add command/query contracts for create, get, cancel, and lifecycle.
@@ -71,11 +89,14 @@ Inventory, pricing, payment, and shipping are internal boundaries for now. Add p
 - Treat production runtime, broker, identity, and observability backend as explicit decisions, not assumptions.
 - Run restore, build, format, and tests before handing over changes.
 
-## Open Decisions
+## Decisions
+
+- Identity: use OIDC/JWT bearer authentication. Use policy-based authorization with `orders:read`, `orders:create`, and `orders:cancel` scopes. Keycloak is the local/reference provider; a customer IdP can replace it later if it supports OIDC.
+- Observability: export telemetry through OpenTelemetry Collector. Use OpenSearch and OpenSearch Dashboards as the default self-hosted observability store and UI. Elasticsearch is an acceptable alternative when the chosen distribution/license is approved.
+- Inventory: use reservation, not validation-only. Creating an order reserves stock; cancellation releases the reservation when fulfillment has not started.
+- Payment: authorize during order creation. Capture later from the Worker when fulfillment starts; cancellation before capture voids the authorization.
+
+## Still Open
 
 - Production runtime platform.
 - Production message transport.
-- Identity provider and authorization rules.
-- Observability backend.
-- Inventory reservation vs. validation-only behavior.
-- Payment capture timing.
