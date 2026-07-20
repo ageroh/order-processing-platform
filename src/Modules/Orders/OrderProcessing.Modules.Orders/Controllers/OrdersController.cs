@@ -1,27 +1,50 @@
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using OrderProcessing.Modules.Orders.Application;
 using OrderProcessing.Modules.Orders.Contracts;
 
 namespace OrderProcessing.Modules.Orders.Controllers;
 
 [ApiController]
 [Route("orders")]
-public sealed class OrdersController : ControllerBase
+public sealed class OrdersController(IOrdersCommandHandler commandHandler) : ControllerBase
 {
     private const string CorrelationIdHeader = "X-Correlation-Id";
 
     [HttpPost]
     [ProducesResponseType(typeof(OrderResponse), StatusCodes.Status202Accepted)]
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
-    public IActionResult CreateOrder(
+    public async Task<IActionResult> CreateOrder(
         [FromBody] CreateOrderRequest request,
         [FromHeader(Name = CorrelationIdHeader)] string? correlationId,
-        [FromHeader(Name = "Idempotency-Key")] string? idempotencyKey)
+        [FromHeader(Name = "Idempotency-Key")] string? idempotencyKey,
+        CancellationToken cancellationToken)
+    {
+        try
+        {
+            var command = request.ToCommand(idempotencyKey);
+            var result = await commandHandler.CreateOrderAsync(command, cancellationToken);
+
+            return Accepted(new OrderResponse(
+                result.OrderId,
+                request.CustomerId,
+                result.Status,
+                DateTimeOffset.UtcNow));
+        }
+        catch (NotImplementedException)
+        {
+            return CreateNotImplementedProblem(
+                "Create order is not implemented yet.",
+                "The controller is wired to the Orders command handler. The create-order workflow is the first delivery slice.");
+        }
+    }
+
+    private ObjectResult CreateNotImplementedProblem(string title, string detail)
     {
         return StatusCode(StatusCodes.Status501NotImplemented, new ProblemDetails
         {
-            Title = "Create order is not implemented yet.",
-            Detail = "Slice 1 exposes the module controller contract. The command handler arrives in the application slice.",
+            Title = title,
+            Detail = detail,
             Status = StatusCodes.Status501NotImplemented
         });
     }

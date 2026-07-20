@@ -99,7 +99,7 @@ Inventory, pricing, payment, and shipping are internal boundaries for now. Add p
 ## Current Skeleton
 
 - API and Worker hosts.
-- Orders module with domain, persistence mapping, controller contract, and tests.
+- Orders module with domain, application command/port interfaces, persistence mapping, controller contract, and tests.
 - Contract shells for Catalog, Inventory, Pricing, Payments, and Shipping.
 - Dockerfiles, Docker Compose, GitHub Actions CI, OpenTelemetry setup, MassTransit Worker wiring, and Testcontainers-based integration tests.
 
@@ -131,9 +131,9 @@ Before production, define target load and validate it with tests such as:
 
 ## Backlog
 
-1. Add command/query contracts for create, get, cancel, and lifecycle.
-2. Add ports for inventory, pricing, payment, and shipping.
-3. Implement a thin create-order path with deterministic fake adapters.
+1. Add query contracts for get, cancel, and lifecycle.
+2. Implement the existing create-order command and provider ports.
+3. Add deterministic fake adapters for inventory, pricing, and payment.
 4. Add journey tests for success, rejection, retrieval, cancellation, and outbox persistence.
 5. Implement a simple Worker outbox relay and MassTransit dispatch.
 
@@ -142,8 +142,8 @@ Before production, define target load and validate it with tests such as:
 The skeleton is ready for a delivery team to continue from the first vertical slice. The first developer task should be:
 
 1. Keep the existing Orders endpoints.
-2. Add `CreateOrderCommand` and handler inside the Orders module.
-3. Add fake inventory, pricing, and payment ports.
+2. Implement `CreateOrderCommand` and `IOrdersCommandHandler` inside the Orders module.
+3. Wire fake inventory, pricing, and payment adapters to the existing ports.
 4. Persist the order and outbox message in one transaction.
 5. Replace the `POST /orders` placeholder with a real accepted/rejected response.
 
