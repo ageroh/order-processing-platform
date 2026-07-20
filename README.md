@@ -6,14 +6,40 @@ Compact architecture skeleton for an Order Processing Platform using .NET 10, EF
 
 Build a modular monolith first. Keep module boundaries clear, ship API and Worker as portable Docker images, and defer cloud/runtime choices until real constraints are known.
 
+This skeleton is ready for a delivery team to pick up next day. The remaining work is intentionally listed as delivery backlog, not missing foundation work.
+
+## Architecture
+
 ```text
-Client
-  -> OrderProcessing.Api
-  -> Orders module
-  -> PostgreSQL
-  -> Outbox
-  -> OrderProcessing.Worker
-  -> External providers
+                   +----------------------+
+                   |        Client        |
+                   +----------+-----------+
+                              |
+                              v
+                   +----------------------+
+                   |  OrderProcessing.Api |
+                   +----------+-----------+
+                              |
+                              v
+                   +----------------------+
+                   |    Orders Module     |
+                   +----+------------+----+
+                        |            |
+                        v            v
+              +--------------+   +----------------------+
+              |  PostgreSQL  |   | Capability Contracts |
+              | orders schema|   | Catalog/Inventory/   |
+              +------+-------+   | Pricing/Payments/    |
+                     |           | Shipping             |
+                     v           +----------+-----------+
+              +--------------+              |
+              |    Outbox    |              v
+              +------+-------+   +----------------------+
+                     |           |  External Providers  |
+                     v           +----------------------+
+              +--------------+
+              |    Worker    |
+              +--------------+
 ```
 
 ## Assumptions
@@ -23,7 +49,7 @@ Client
 - Orders is the source of truth for order status, lifecycle, cancellation, and rejection.
 - Catalog, Inventory, Pricing, Payments, and Shipping are capability boundaries behind the order workflow.
 - MassTransit hides the broker choice.
-- OpenTelemetry, OpenSearch, GitHub Actions, Docker Compose, and Testcontainers are part of the foundation.
+- OpenTelemetry, GitHub Actions, Docker Compose, and Testcontainers are part of the foundation.
 - Testcontainers-backed PostgreSQL tests run in CI with `RUN_TESTCONTAINERS=true`.
 
 ## API
@@ -79,6 +105,18 @@ Before production, define target load and validate it with tests such as:
 4. Add journey tests for success, rejection, retrieval, cancellation, and outbox persistence.
 5. Implement outbox dispatch through MassTransit.
 
+## Next-Day Pickup
+
+The skeleton is ready for a delivery team to continue from the first vertical slice. The first developer task should be:
+
+1. Keep the existing Orders endpoints.
+2. Add `CreateOrderCommand` and handler inside the Orders module.
+3. Add fake inventory, pricing, and payment ports.
+4. Persist the order and outbox message in one transaction.
+5. Replace the `POST /orders` placeholder with a real accepted/rejected response.
+
+The other endpoints can remain placeholders until their slice starts.
+
 ## Delivery Notes
 
 - Start with the Orders workflow; do not expand into microservices or extra public APIs yet.
@@ -89,7 +127,7 @@ Before production, define target load and validate it with tests such as:
 - Treat production runtime, broker, identity, and observability backend as explicit decisions, not assumptions.
 - Run restore, build, format, and tests before handing over changes.
 
-## Decisions
+## Decisions To Implement
 
 - Identity: use OIDC/JWT bearer authentication. Use policy-based authorization with `orders:read`, `orders:create`, and `orders:cancel` scopes. Keycloak is the local/reference provider; a customer IdP can replace it later if it supports OIDC.
 - Observability: export telemetry through OpenTelemetry Collector. Use OpenSearch and OpenSearch Dashboards as the default self-hosted observability store and UI. Elasticsearch is an acceptable alternative when the chosen distribution/license is approved.
