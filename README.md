@@ -18,6 +18,7 @@ flowchart LR
     orders[Orders module]
     db[(PostgreSQL\norders schema)]
     broker[Message broker\nMassTransit transport]
+    asyncConsumers[Async consumers\npayment capture / shipping / notifications]
     worker[OrderProcessing.Worker replicas]
     providers[External providers\ninventory / payment / shipping]
     otel[OpenTelemetry Collector]
@@ -27,13 +28,14 @@ flowchart LR
     lb -->|horizontal scale| api
     api --> orders
     orders -->|order state + outbox| db
-    worker -->|polls outbox| db
-    worker -->|publishes / consumes| broker
-    broker -->|async work| worker
-    worker --> providers
+    worker -->|simple outbox relay| db
+    worker -->|publishes integration events| broker
+    broker -->|fan-out / retry / buffering| asyncConsumers
+    asyncConsumers -->|provider adapters| providers
 
     api -. traces / metrics / logs .-> otel
     worker -. traces / metrics / logs .-> otel
+    asyncConsumers -. traces / metrics / logs .-> otel
     db -. metrics / logs .-> otel
     broker -. metrics / logs .-> otel
     otel --> obs
@@ -45,9 +47,14 @@ flowchart LR
 - Worker handles async integration and outbox work.
 - Orders is the source of truth for order status, lifecycle, cancellation, and rejection.
 - Catalog, Inventory, Pricing, Payments, and Shipping are capability boundaries behind the order workflow.
-- MassTransit hides the broker choice.
+- The database outbox is the reliability boundary; a simple Worker relay moves records to the broker.
+- MassTransit/broker is the async delivery and fan-out mechanism after the outbox relay.
 - OpenTelemetry, GitHub Actions, Docker Compose, and Testcontainers are part of the foundation.
 - Testcontainers-backed PostgreSQL tests run in CI with `RUN_TESTCONTAINERS=true`.
+
+## Messaging Note
+
+MassTransit is kept intentionally, but only on the async side. The API should persist order state and outbox records in the same database transaction. The Worker owns the outbox relay and publishes integration events through MassTransit so broker choice stays replaceable.
 
 ## API
 
@@ -74,15 +81,16 @@ Inventory, pricing, payment, and shipping are internal boundaries for now. Add p
 - API and Worker hosts.
 - Orders module with domain, persistence mapping, controller contract, and tests.
 - Contract shells for Catalog, Inventory, Pricing, Payments, and Shipping.
-- Dockerfiles, Docker Compose, GitHub Actions CI, OpenTelemetry setup, and Testcontainers-based integration tests.
+- Dockerfiles, Docker Compose, GitHub Actions CI, OpenTelemetry setup, MassTransit Worker wiring, and Testcontainers-based integration tests.
 
 ## Scalability
 
 No fixed request-per-second claim is made without load testing. The design is intended to scale by:
 
 - running multiple API containers behind a load balancer
-- scaling Worker containers independently for outbox and integration throughput
-- keeping PostgreSQL as the first capacity bottleneck to monitor
+- scaling Worker containers independently for outbox relay and integration throughput
+- scaling broker consumers when async integrations increase
+- keeping the relational database as the first capacity bottleneck to monitor
 - using indexes, connection pooling, idempotency, and optimistic concurrency around order writes
 - moving slow provider calls behind async workflows when they do not need to block the caller
 
@@ -100,7 +108,7 @@ Before production, define target load and validate it with tests such as:
 2. Add ports for inventory, pricing, payment, and shipping.
 3. Implement a thin create-order path with deterministic fake adapters.
 4. Add journey tests for success, rejection, retrieval, cancellation, and outbox persistence.
-5. Implement outbox dispatch through MassTransit.
+5. Implement a simple Worker outbox relay and MassTransit dispatch.
 
 ## Next-Day Pickup
 
@@ -120,8 +128,9 @@ The other endpoints can remain placeholders until their slice starts.
 - Add tests before each behavior slice, especially around order state transitions and persistence.
 - Keep external systems behind ports and use deterministic fake adapters until real provider contracts are known.
 - Persist order state and outbox messages in one transaction.
+- Keep broker access behind MassTransit; business modules should not depend on broker SDKs.
 - Keep module internals private unless another module or host genuinely needs a contract.
-- Treat production runtime, broker, identity, and observability backend as explicit decisions, not assumptions.
+- Treat production runtime, identity, and observability backend as explicit decisions, not assumptions.
 - Run restore, build, format, and tests before handing over changes.
 
 ## Decisions To Implement
@@ -134,4 +143,4 @@ The other endpoints can remain placeholders until their slice starts.
 ## Still Open
 
 - Production runtime platform.
-- Production message transport.
+- Production MassTransit transport.

@@ -1,4 +1,3 @@
-using MassTransit;
 using OrderProcessing.Api.Observability;
 using OrderProcessing.Modules.Orders;
 using OpenTelemetry.Metrics;
@@ -12,11 +11,6 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
 builder.Services.AddProblemDetails();
-builder.Services.AddMassTransit(configurator =>
-{
-    configurator.SetKebabCaseEndpointNameFormatter();
-    configurator.UsingInMemory((context, cfg) => cfg.ConfigureEndpoints(context));
-});
 
 builder.Services
     .AddOpenTelemetry()
